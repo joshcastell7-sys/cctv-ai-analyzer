@@ -2,40 +2,49 @@ import os
 import requests
 from dotenv import load_dotenv
 
-# 1. Cargar las llaves secretas de forma segura
 load_dotenv()
 api_key = os.getenv("GEMINI_API_KEY")
 
-def analizar_alerta_cctv(log_evento):
+def analizar_archivo_logs(ruta_archivo):
     """
-    Toma un log técnico de una cámara de seguridad y usa la API REST 
-    para generar un reporte inteligente.
+    Abre un archivo .txt con logs de un DVR, lee todo el contenido 
+    y se lo manda a la IA para hacer un triaje diario.
     """
-    # El Endpoint corregido con el modelo exacto (ahora sí)
+    # 1. Leer el archivo .txt
+    try:
+        with open(ruta_archivo, "r", encoding="utf-8") as archivo:
+            contenido_logs = archivo.read()
+    except FileNotFoundError:
+        return f"Error: No se encontró el archivo '{ruta_archivo}'. Verifica que esté en la misma carpeta."
+
+    # 2. Conectar a la API
     url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key={api_key}"
     headers = {'Content-Type': 'application/json'}
     
-    # El "Prompt" donde le damos instrucciones al cerebro de la IA
-    prompt = f"Eres un analista de seguridad electrónica. Lee este log de un DVR, clasifica su nivel de riesgo (Bajo, Medio, Alto) y haz un resumen de 2 líneas: '{log_evento}'"
+    # 3. El Prompt Inteligente (La magia del negocio)
+    prompt = f"""
+    Eres el operador en jefe de un centro de monitoreo CCTV. 
+    A continuación te paso el registro de eventos de un día completo. 
+    Tu trabajo es:
+    1. Ignorar los eventos de rutina (System Startup, Normal activity, etc).
+    2. Identificar ÚNICAMENTE las amenazas reales (Riesgo Medio o Alto).
+    3. Redactar un reporte ejecutivo directo y profesional para el dueño del negocio indicando qué pasó y a qué hora.
     
-    # La estructura JSON que requiere la API
+    Aquí están los logs del día:
+    {contenido_logs}
+    """
+    
     payload = {
-        "contents": [{
-            "parts": [{"text": prompt}]
-        }]
+        "contents": [{"parts": [{"text": prompt}]}]
     }
     
     try:
-        # Hacemos la petición POST al servidor
         response = requests.post(url, headers=headers, json=payload)
         
-        # Validamos que el servidor nos haya respondido bien (Código 200)
         if response.status_code == 200:
             datos = response.json()
-            # Navegamos el JSON para extraer solo el texto útil
             return datos['candidates'][0]['content']['parts'][0]['text']
         else:
-            # IMPRIMIMOS EL ERROR DETALLADO DEL SERVIDOR
             return f"Error HTTP {response.status_code}: {response.text}"
             
     except Exception as e:
@@ -43,12 +52,10 @@ def analizar_alerta_cctv(log_evento):
 
 # --- PRUEBA DEL SCRIPT ---
 if __name__ == "__main__":
-    # Simulamos un log rústico que sacaría una cámara en campo
-    log_prueba = "[SYS_ALARM] CH04_Perimetro_Norte | Motion_Detection | Line_Cross_Rule_01 | Obj: Unknown | Time: 03:15:22"
+    nombre_archivo = "logs_dahua.txt"
     
-    print("Conectando con la API y analizando el log de seguridad...\n")
-    reporte_final = analizar_alerta_cctv(log_prueba)
+    print(f"Leyendo archivo '{nombre_archivo}' y generando reporte diario...\n")
+    reporte_final = analizar_archivo_logs(nombre_archivo)
     
-    print("=== REPORTE GENERADO POR IA ===")
+    print("=== REPORTE EJECUTIVO DIARIO ===")
     print(reporte_final)
-    

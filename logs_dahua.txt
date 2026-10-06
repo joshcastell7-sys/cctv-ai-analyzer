@@ -1,0 +1,7 @@
+2026-10-05 08:00:12 [INFO] CH01_MainDoor | System Startup | Status: OK
+2026-10-05 08:15:00 [INFO] CH01_MainDoor | Motion_Detection | Employee arrival
+2026-10-05 12:30:45 [INFO] CH02_Cashier | Motion_Detection | Normal activity
+2026-10-05 19:00:00 [INFO] CH01_MainDoor | System Arming | Status: Armed
+2026-10-05 23:14:10 [WARNING] CH03_Backyard | Motion_Detection | Obj: Animal/Shadow
+2026-10-05 03:15:22 [SYS_ALARM] CH04_Perimetro_Norte | Line_Cross_Rule_01 | Obj: Human
+2026-10-05 03:16:05 [SYS_ALARM] CH02_Cashier | Video_Tampering_Detected | Camera covered
